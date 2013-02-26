@@ -1,4 +1,4 @@
-# jQuery.vivified v1.0.0
+# jQuery.vivified v1.2.0
 # https://github.com/marcandre/vivified
 
 # Simple base class to extend jQuery
@@ -20,6 +20,8 @@ class jQuery.Extension extends jQuery
     @::constructor = jQuery
     @
 
+  @ancestors: []
+
 # Makes it easy to turn DOM elements into objects with your own methods,
 # as well as those of jQuery.
 #
@@ -36,7 +38,7 @@ class jQuery.Vivified extends jQuery.Extension
       console.error("Class must call @vivify")
     if reg[@__class__]
       console.error("Constructor called on already vivified DOM object", this)
-    reg[@__class__] = this
+    reg[klass] = this for klass in @__class__.ancestors
 
     @on 'refresh', => @refresh()
     @initialize?(args...)
@@ -49,15 +51,14 @@ class jQuery.Vivified extends jQuery.Extension
 
   @vivify: (autoVivify) ->
     $.extend(@autoVivified ||= {}, autoVivify) if autoVivify
+    @ancestors = [@, @ancestors...] unless @ancestors[0] is @
     super()
 
   @vivify()
 
 $.fn.vivify = (klass, initArgs...) ->
   [first, rest...] = for obj in @get()
-    unless reg = $(obj).data('vivified')
-      $(obj).data('vivified', reg = {})
-    reg[klass] ||= new klass(obj, initArgs...)
+    ((reg = $(obj).data('vivified')) and reg[klass]) or new klass(obj, initArgs...)
   first ||= $()
   first = first.add(other) for other in rest
   first
@@ -69,9 +70,9 @@ $.fn.vivified = ->
       console.error "DOM object is not vivified:", obj
       $(obj)
     else
-      if values.length > 1
-        console.error "DOM object is vivified with more than one class:", obj, values
-      values[0]
+      if (u=$.unique(values)).length > 1
+        console.error "DOM object is vivified with more than one class:", obj, u
+      values[0] # Topmost class is stored first
   first ||= $()
   first = first.add(other) for other in rest
   first
