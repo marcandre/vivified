@@ -1,4 +1,4 @@
-# jQuery.vivified v1.2.0
+# jQuery.vivified v1.2.1
 # https://github.com/marcandre/vivified
 
 # Simple base class to extend jQuery
@@ -40,8 +40,8 @@ class jQuery.Vivified extends jQuery.Extension
       console.error("Constructor called on already vivified DOM object", this)
     reg[klass] = this for klass in @__class__.ancestors
 
-    @on 'refresh', => @refresh()
     @initialize?(args...)
+    @on 'refresh', => @refresh()
     @refresh()
 
   refresh: ->
